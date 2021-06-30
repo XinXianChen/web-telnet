@@ -28,18 +28,15 @@ public class InputPrintThread extends Thread {
 
         int num = 0;
 
-        char[] bytes = new char[1024];
+        char[] bytes = new char[2048];
 
         InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 
         try {
             //这里会发生阻塞，通过websocket推送进行
             while (!interrupted() && (num = inputStreamReader.read(bytes)) != -1) {
-
-                for (int i = 0; i < num; i++) {
-                    char ab = bytes[i];
-                    WebSocketServer.sendInfo(ab + "", SocketIdEnum.TELNET.getValue());
-                }
+                final String msg = new String(bytes, 0, num);
+                WebSocketServer.sendInfo(msg, SocketIdEnum.TELNET.getValue());
 
             }
         } catch (IOException e) {
