@@ -5,8 +5,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.chaobei.webtelnet.component.TelnetComponent;
+import xyz.chaobei.webtelnet.server.NettyServer;
+import xyz.chaobei.webtelnet.server.pojo.Node;
 
 import java.io.IOException;
+import java.util.Collection;
 
 /**
  * Copyright (C), 2015-2019
@@ -83,6 +86,9 @@ public class TelnetController {
         }
         return "success";
     }
-
-
+//
+//    @GetMapping("getNodes")
+//    public Collection<Node> sendCommon() {
+//        return NettyServer.nodeCache.values();
+//    }
 }

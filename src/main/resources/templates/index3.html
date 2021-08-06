@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../static/jquery-3.4.1.min.js"></script>
+    <script src="../static/xlog-1.0.7.js"></script>
+    <link rel="stylesheet" href="../static/xlog.css">
+    <style>
+        body{
+            margin: 0;
+            background-color: black;
+        }
+    </style>
+</head>
+<body id="mybody">
+<div >
+    IP:<input id="ip" type="text" value="127.0.0.1"/>
+    Port:<input id="port" type="text" value="12306"/>
+
+    <button type="button" onclick="openSession()">open</button>
+    <button type="button" onclick="closeSession()">close</button>
+
+</div>
+<div contenteditable id="xlog" class="dark"></div>
+</body>
+<script>
+    var container = document.getElementById("xlog");
+    var lexer = new XLog(container);
+
+
+    let val = '';
+    var socket;
+    if (typeof(WebSocket) == "undefined") {
+        console.log("您的浏览器不支持WebSocket");
+    } else {
+        console.log("您的浏览器支持WebSocket");
+        //实现化WebSocket对象，指定要连接的服务器地址与端口  建立连接
+        //等同于socket = new WebSocket("ws://localhost:8083/checkcentersys/websocket/20");
+        socket = new WebSocket("ws://localhost:8080/websocket/telnet".replace("http", "ws"));
+        //打开事件
+        socket.onopen = function() {
+            console.log("Socket 已打开");
+            //socket.send("这是来自客户端的消息" + location.href + new Date());
+        };
+        //获得消息事件
+        socket.onmessage = function(msg) {
+            // console.log(msg.data);
+            show(msg.data)
+        };
+        //关闭事件
+        socket.onclose = function() {
+            console.log("Socket已关闭");
+        };
+        //发生了错误事件
+        socket.onerror = function() {
+            alert("Socket发生了错误");
+            //此时可以尝试刷新页面
+        }
+    }
+
+    function sendCommend() {
+        console.log(document.getElementById("xlog").innerText);
+
+        let currentVal = document.getElementById("xlog").innerText;
+
+        let number = currentVal.lastIndexOf('>');
+
+        let commonResult = currentVal.slice(number + 1);
+
+        send(commonResult);
+    }
+
+    function show(value) {
+        lexer.write(value)
+        var divscll = document.getElementById('mybody');
+        window.scrollTo(0,divscll.querySelector("#xlog").scrollHeight);
+    }
+
+
+    document.onkeydown = function (event) {
+        var e = event || window.event;
+        if (e && e.keyCode == 13) { //回车键的键值为13
+            sendCommend();
+        }
+    };
+
+
+    function send(common) {
+        $.get("/telnet/sendCommon",{common:common},function (res) {
+            console.log(res)
+        })
+    }
+
+    function openSession() {
+
+        $.get("/telnet/open",{ip:$("#ip").val(),port:$("#port").val()},function (res) {
+            console.log(res)
+        })
+    }
+
+    function closeSession() {
+        $.get("/telnet/close",function (res) {
+            console.log(res)
+        })
+    }
+</script>
+</html>

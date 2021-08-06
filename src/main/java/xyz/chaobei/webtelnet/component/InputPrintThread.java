@@ -28,7 +28,7 @@ public class InputPrintThread extends Thread {
 
         int num = 0;
 
-        char[] bytes = new char[2048];
+        char[] bytes = new char[1024];
 
         InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 

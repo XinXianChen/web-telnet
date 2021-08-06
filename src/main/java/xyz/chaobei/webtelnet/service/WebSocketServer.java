@@ -22,6 +22,8 @@ public class WebSocketServer {
     //concurrent包的线程安全Set，用来存放每个客户端对应的MyWebSocket对象。
     private static CopyOnWriteArraySet<WebSocketServer> webSocketSet = new CopyOnWriteArraySet<WebSocketServer>();
 
+    private static StringBuilder cache = new StringBuilder();
+
     //与某个客户端的连接会话，需要通过它来给客户端发送数据
     private Session session;
 
@@ -93,11 +95,22 @@ public class WebSocketServer {
      * */
     public static void sendInfo(String message,@PathParam("sid") String sid) throws IOException {
         log.info("推送消息到窗口"+sid+"，推送内容:"+message);
-        final String msg = replaceMsg(message);
-        if (StringUtils.isEmpty(msg)) {
+        if (StringUtils.isEmpty(message)) {
             return;
         }
 
+        String msg = cache.append(message).toString();
+        if (!message.contains(">") && cache.length() < 2048) {
+            return;
+        } else {
+            msg = msg.replaceAll("\\[m","").replaceAll("\\[\\?1l\u001B>","")
+                    .replaceAll("004l","")
+                    .replaceAll("\\[\\?1h\u001B=\u001B\\[\\?2004h","");
+            cache.setLength(0);
+        }
+        if (msg.contains(">")) {
+            msg = msg + System.lineSeparator();
+        }
         for (WebSocketServer item : webSocketSet) {
             try {
                 //这里可以设定只推送给这个sid的，为null则全部推送
